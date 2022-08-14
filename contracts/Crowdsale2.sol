@@ -13,6 +13,7 @@ contract Crowdsale is Ownable {
         uint256 totalDeposit;
         uint256 totalClaim;
         uint256 totalClaimed;
+        bool isSecondTimeDepositUSDT; // default is false
     }
 
     using SafeMath for uint256;
@@ -33,9 +34,9 @@ contract Crowdsale is Ownable {
     uint256 public tokenRemaining = crowdsalePool;
     uint256 public totalFunding = 0;
 
-    uint256 public openCrowdsale = 1660033100;
-    uint256 public closeCrowdsale = 1660033220;
-    uint256 public releaseTime = 1660033280;
+    uint256 public openCrowdsale = 1660492000;
+    uint256 public closeCrowdsale = 1660492120;
+    uint256 public releaseTime = 1660492180;
 
     uint256 public constant cliffTime = 1 minutes;
 
@@ -88,6 +89,7 @@ contract Crowdsale is Ownable {
     }
     
     function depositUSDT(uint256 amountUSDT) public {
+        if (investorInfor[msg.sender].isSecondTimeDepositUSDT == false) {
         uint256 pointTimestamp = block.timestamp;
 
         require(isOpenCrowdsale(pointTimestamp), "Crowdsale does not open.");
@@ -108,7 +110,11 @@ contract Crowdsale is Ownable {
 
         bool transferUSDTSuccess = ERC20(usdtAddress).transferFrom(msg.sender, fundingWallet, amountUSDT);
         require(transferUSDTSuccess, "Transfer failed");
+
+        investorInfor[msg.sender].isSecondTimeDepositUSDT = true;
+        }
     }
+
 
     function isOpenCrowdsale(uint256 pointTimestamp) public view returns (bool) {
         return (pointTimestamp > openCrowdsale) && (pointTimestamp < closeCrowdsale);
