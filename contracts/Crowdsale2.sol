@@ -27,16 +27,16 @@ contract Crowdsale is Ownable {
     mapping(address => InvestorInfor) public investorInfor;
 
     uint256 public constant crowdsalePool = 10000000 * (10**18);
-    uint256 public constant tokenPrice = 1 * 10**(-2) * (10**18);
-    uint256 public constant minDeposit = 100 * (10**18);
+    uint256 public constant tokenPrice = 1 * 10**(-1) * (10**18);
+    uint256 public constant minDeposit = 200 * (10**18);
     uint256 public constant maxDeposit = 500 * (10**18);
 
     uint256 public tokenRemaining = crowdsalePool;
     uint256 public totalFunding = 0;
 
-    uint256 public openCrowdsale = 1660492000;
-    uint256 public closeCrowdsale = 1660492120;
-    uint256 public releaseTime = 1660492180;
+    uint256 public openCrowdsale = 1660497400;
+    uint256 public closeCrowdsale = 1660497580;
+    uint256 public releaseTime = 1660497640;
 
     uint256 public constant cliffTime = 1 minutes;
 
