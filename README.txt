@@ -42,14 +42,15 @@ Details:
 	owner's address (address A)
 		addInvestors ==> transfer
 
-		transfer to: crowdsale contract
+		transfer to: crowdsale's contract
 		transfer amount: 500000000000000000000000
 
 	usdt's address (address B)
 		approve ==> depositUSDT ==> claimTokens
 
-		approve spender: crowdsale contract
-		approve amount: 500000000000000000000
+		approve spender: crowdsale's contract
+		approve amount: 5000000000000000000000
+						
 
 		deposit USDT: 500000000000000000000
 		

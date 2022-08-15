@@ -26,7 +26,7 @@ contract Crowdsale is Ownable {
     mapping(address => bool) public isInvestor;
     mapping(address => InvestorInfor) public investorInfor;
 
-    uint256 public constant crowdsalePool = 10000000 * (10**18);
+    uint256 public constant crowdsalePool = 500000 * (10**18);
     uint256 public constant tokenPrice = 1 * 10**(-1) * (10**18);
     uint256 public constant minDeposit = 200 * (10**18);
     uint256 public constant maxDeposit = 500 * (10**18);
@@ -38,7 +38,7 @@ contract Crowdsale is Ownable {
     uint256 public closeCrowdsale = 1660497580;
     uint256 public releaseTime = 1660497640;
 
-    uint256 public constant cliffTime = 1 minutes;
+    uint256 public constant cliffTime = 3 minutes;
 
     enum VestingStages {
         TGE,
@@ -75,10 +75,10 @@ contract Crowdsale is Ownable {
         unlockPercentage[VestingStages.P5] = 100;
 
         releaseDate[VestingStages.TGE] = firstListingDate;
-        releaseDate[VestingStages.P2] = firstListingDate + 1 minutes;
-        releaseDate[VestingStages.P3] = firstListingDate + 2 minutes;
-        releaseDate[VestingStages.P4] = firstListingDate + 3 minutes;
-        releaseDate[VestingStages.P5] = firstListingDate + 4 minutes; 
+        releaseDate[VestingStages.P2] = firstListingDate + 3 minutes;
+        releaseDate[VestingStages.P3] = firstListingDate + 6 minutes;
+        releaseDate[VestingStages.P4] = firstListingDate + 9 minutes;
+        releaseDate[VestingStages.P5] = firstListingDate + 12 minutes; 
     }
 
     function addInvestors(address[] memory _addressArr) public onlyOwner {
@@ -87,31 +87,35 @@ contract Crowdsale is Ownable {
             isInvestor[curAddress] = true;
         }
     }
+
+    function removeInvestors(address _addressInvestor) public onlyOwner {
+        isInvestor[_addressInvestor] = false;
+    }
     
     function depositUSDT(uint256 amountUSDT) public {
         if (investorInfor[msg.sender].isSecondTimeDepositUSDT == false) {
-        uint256 pointTimestamp = block.timestamp;
+            uint256 pointTimestamp = block.timestamp;
 
-        require(isOpenCrowdsale(pointTimestamp), "Crowdsale does not open.");
+            require(isOpenCrowdsale(pointTimestamp), "Crowdsale does not open.");
 
-        require(isInvestor[msg.sender], "Invalid Investor");
+            require(isInvestor[msg.sender], "Invalid Investor");
 
-        require(amountUSDT >= minDeposit, "less than");
-        require(amountUSDT <= maxDeposit, "more than");
+            require(amountUSDT >= minDeposit, "less than");
+            require(amountUSDT <= maxDeposit, "more than");
 
-        uint256 totalTokenReceive = amountUSDT.div(tokenPrice).mul(10**18);
-        require(totalTokenReceive <= tokenRemaining, "not enough");
+            uint256 totalTokenReceive = amountUSDT.div(tokenPrice).mul(10**18);
+            require(totalTokenReceive <= tokenRemaining, "not enough");
 
-        investorInfor[msg.sender].totalDeposit += amountUSDT;
-        investorInfor[msg.sender].totalClaim += totalTokenReceive;
+            investorInfor[msg.sender].totalDeposit += amountUSDT;
+            investorInfor[msg.sender].totalClaim += totalTokenReceive;
 
-        tokenRemaining = tokenRemaining.sub(totalTokenReceive);
-        totalFunding += amountUSDT;
+            tokenRemaining = tokenRemaining.sub(totalTokenReceive);
+            totalFunding += amountUSDT;
 
-        bool transferUSDTSuccess = ERC20(usdtAddress).transferFrom(msg.sender, fundingWallet, amountUSDT);
-        require(transferUSDTSuccess, "Transfer failed");
+            bool transferUSDTSuccess = ERC20(usdtAddress).transferFrom(msg.sender, fundingWallet, amountUSDT);
+            require(transferUSDTSuccess, "Transfer failed");
 
-        investorInfor[msg.sender].isSecondTimeDepositUSDT = true;
+            investorInfor[msg.sender].isSecondTimeDepositUSDT = true;
         }
     }
 
@@ -150,14 +154,14 @@ contract Crowdsale is Ownable {
     function getAmountUnlockedToken(address _addressInvestor) internal view returns (uint256) {
         uint256 vestingStageIndex = getVestingStageIndex();
 
-        return vestingStageIndex == 100 ? 0 : investorInfor[_addressInvestor].totalClaim.mul(unlockPercentage[VestingStages(vestingStageIndex)]).div(100);
+        return vestingStageIndex == 999 ? 0 : investorInfor[_addressInvestor].totalClaim.mul(unlockPercentage[VestingStages(vestingStageIndex)]).div(100);
     } 
 
     function getVestingStageIndex() public view returns (uint256 index) {
         uint256 timestamp = block.timestamp;
 
         if (timestamp < releaseDate[VestingStages(0)]) {
-            return 100;
+            return 999;
         }
 
         for (uint256 i = 1; i < 5; ++i) {
