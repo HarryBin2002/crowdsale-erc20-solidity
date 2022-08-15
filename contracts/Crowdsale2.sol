@@ -174,7 +174,6 @@ contract Crowdsale is Ownable {
     }
 
     //GET FUNCTION - INEVESTOR'S INFORMATION
-    
     function getTotalDeposit(address _addressInvestor) public view returns (uint256) {
         return investorInfor[_addressInvestor].totalDeposit;
     }
@@ -191,4 +190,17 @@ contract Crowdsale is Ownable {
         return investorInfor[_addressInvestor].totalClaim - investorInfor[_addressInvestor].totalClaimed;
     }
 
+    //SET FUNCTION - CROWDSALE TIME
+    function setTimeCrowdsale(uint256 _openCrowdsale, uint256 _closeCrowdsale) public onlyOwner {
+        require(_openCrowdsale < _closeCrowdsale);
+
+        openCrowdsale = _openCrowdsale;
+        closeCrowdsale = _closeCrowdsale;
+    }
+
+    function setReleaseTime(uint256 _releaseTime) public onlyOwner {
+        require(closeCrowdsale < _releaseTime);
+
+        releaseTime = _releaseTime;
+    }
 }
