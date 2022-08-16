@@ -34,18 +34,23 @@ contract Crowdsale is Ownable {
     uint256 public tokenRemaining = crowdsalePool;
     uint256 public totalFunding = 0;
 
-    uint256 public openCrowdsale = 1660497400;
-    uint256 public closeCrowdsale = 1660497580;
-    uint256 public releaseTime = 1660497640;
+    uint256 public openCrowdsale = 1660641000;
+    uint256 public closeCrowdsale = 1660641120;
+    uint256 public releaseTime = 1660641180;
 
-    uint256 public constant cliffTime = 3 minutes;
+    uint256 public constant cliffTime = 3 minutes; // clifftime = timeOf 3 stages
 
     enum VestingStages {
         TGE,
         P2,
         P3,
         P4,
-        P5
+        P5,
+        P6,
+        P7,
+        P8,
+        P9,
+        P10
     }
 
     mapping(VestingStages => uint256) public unlockPercentage;
@@ -68,17 +73,27 @@ contract Crowdsale is Ownable {
 
         uint256 firstListingDate = releaseTime;
 
-        unlockPercentage[VestingStages.TGE] = 20;
-        unlockPercentage[VestingStages.P2] = 40;
-        unlockPercentage[VestingStages.P3] = 60;
-        unlockPercentage[VestingStages.P4] = 80;
-        unlockPercentage[VestingStages.P5] = 100;
+        unlockPercentage[VestingStages.TGE] = 10;
+        unlockPercentage[VestingStages.P2] = 20;
+        unlockPercentage[VestingStages.P3] = 30;
+        unlockPercentage[VestingStages.P4] = 40;
+        unlockPercentage[VestingStages.P5] = 50;
+        unlockPercentage[VestingStages.P6] = 60;
+        unlockPercentage[VestingStages.P7] = 70;
+        unlockPercentage[VestingStages.P8] = 80;
+        unlockPercentage[VestingStages.P9] = 90;
+        unlockPercentage[VestingStages.P10] = 100;
 
         releaseDate[VestingStages.TGE] = firstListingDate;
-        releaseDate[VestingStages.P2] = firstListingDate + 3 minutes;
-        releaseDate[VestingStages.P3] = firstListingDate + 6 minutes;
-        releaseDate[VestingStages.P4] = firstListingDate + 9 minutes;
-        releaseDate[VestingStages.P5] = firstListingDate + 12 minutes; 
+        releaseDate[VestingStages.P2] = firstListingDate + 1 minutes;
+        releaseDate[VestingStages.P3] = firstListingDate + 2 minutes;
+        releaseDate[VestingStages.P4] = firstListingDate + 3 minutes;
+        releaseDate[VestingStages.P5] = firstListingDate + 4 minutes;
+        releaseDate[VestingStages.P6] = firstListingDate + 5 minutes;
+        releaseDate[VestingStages.P7] = firstListingDate + 6 minutes;
+        releaseDate[VestingStages.P8] = firstListingDate + 7 minutes;
+        releaseDate[VestingStages.P9] = firstListingDate + 8 minutes;
+        releaseDate[VestingStages.P10] = firstListingDate + 9 minutes;
     }
 
     function addInvestors(address[] memory _addressArr) public onlyOwner {
@@ -142,7 +157,7 @@ contract Crowdsale is Ownable {
     }
 
     function isClaimTiming(uint256 pointTimestamp) public view returns (bool) {
-        return pointTimestamp > releaseTime;
+        return pointTimestamp > releaseTime + cliffTime;
     }
 
     function getAvailableTokenToClaim(address _addressInvestor) public view returns (uint256) {
@@ -164,18 +179,18 @@ contract Crowdsale is Ownable {
             return 999;
         }
 
-        for (uint256 i = 1; i < 5; ++i) {
+        for (uint256 i = 1; i < 10; ++i) {
             if (timestamp < releaseDate[VestingStages(i)]) {
                 return i - 1;
             }
         }
 
-        return 4;
+        return 9;
     }
 
     // CASE: AN ADDRESS IS LOST CONTROLED
     function changeInvestors(address newAddressInvestor, address oldAddressInvestor) public {
-        require(investorInfor[msg.sender] == oldAddressInvestor);
+        require(msg.sender == oldAddressInvestor);
         investorInfor[newAddressInvestor] = investorInfor[oldAddressInvestor];
         isInvestor[newAddressInvestor] = true;        
         isInvestor[oldAddressInvestor] = false;
