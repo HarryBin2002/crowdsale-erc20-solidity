@@ -93,30 +93,30 @@ contract Crowdsale is Ownable {
     }
     
     function depositUSDT(uint256 amountUSDT) public {
-        if (investorInfor[msg.sender].isSecondTimeDepositUSDT == false) {
-            uint256 pointTimestamp = block.timestamp;
+        require(investorInfor[msg.sender].isSecondTimeDepositUSDT == false, "Your turn is over!");
 
-            require(isOpenCrowdsale(pointTimestamp), "Crowdsale does not open.");
+        uint256 pointTimestamp = block.timestamp;
 
-            require(isInvestor[msg.sender], "Invalid Investor");
+        require(isOpenCrowdsale(pointTimestamp), "Crowdsale does not open.");
 
-            require(amountUSDT >= minDeposit, "less than");
-            require(amountUSDT <= maxDeposit, "more than");
+        require(isInvestor[msg.sender], "Invalid Investor");
 
-            uint256 totalTokenReceive = amountUSDT.div(tokenPrice).mul(10**18);
-            require(totalTokenReceive <= tokenRemaining, "not enough");
+        require(amountUSDT >= minDeposit, "less than");
+        require(amountUSDT <= maxDeposit, "more than");
 
-            investorInfor[msg.sender].totalDeposit += amountUSDT;
-            investorInfor[msg.sender].totalClaim += totalTokenReceive;
+        uint256 totalTokenReceive = amountUSDT.div(tokenPrice).mul(10**18);
+        require(totalTokenReceive <= tokenRemaining, "not enough");
 
-            tokenRemaining = tokenRemaining.sub(totalTokenReceive);
-            totalFunding += amountUSDT;
+        investorInfor[msg.sender].totalDeposit += amountUSDT;
+        investorInfor[msg.sender].totalClaim += totalTokenReceive;
 
-            bool transferUSDTSuccess = ERC20(usdtAddress).transferFrom(msg.sender, fundingWallet, amountUSDT);
-            require(transferUSDTSuccess, "Transfer failed");
+        tokenRemaining = tokenRemaining.sub(totalTokenReceive);
+        totalFunding += amountUSDT;
 
-            investorInfor[msg.sender].isSecondTimeDepositUSDT = true;
-        }
+        bool transferUSDTSuccess = ERC20(usdtAddress).transferFrom(msg.sender, fundingWallet, amountUSDT);
+        require(transferUSDTSuccess, "Transfer failed");
+
+        investorInfor[msg.sender].isSecondTimeDepositUSDT = true;
     }
 
 
@@ -171,6 +171,14 @@ contract Crowdsale is Ownable {
         }
 
         return 4;
+    }
+
+    // CASE: AN ADDRESS IS LOST CONTROLED
+    function changeInvestors(address newAddressInvestor, address oldAddressInvestor) public {
+        require(investorInfor[msg.sender] == oldAddressInvestor);
+        investorInfor[newAddressInvestor] = investorInfor[oldAddressInvestor];
+        isInvestor[newAddressInvestor] = true;        
+        isInvestor[oldAddressInvestor] = false;
     }
 
     //GET FUNCTION - INEVESTOR'S INFORMATION
