@@ -194,6 +194,8 @@ contract Crowdsale is Ownable {
         investorInfor[newAddressInvestor] = investorInfor[oldAddressInvestor];
         isInvestor[newAddressInvestor] = true;        
         isInvestor[oldAddressInvestor] = false;
+
+        delete investorInfor[oldAddressInvestor];
     }
 
     //GET FUNCTION - INEVESTOR'S INFORMATION
