@@ -34,11 +34,11 @@ contract Crowdsale is Ownable {
     uint256 public tokenRemaining = crowdsalePool;
     uint256 public totalFunding = 0;
 
-    uint256 public openCrowdsale = 1660641000;
-    uint256 public closeCrowdsale = 1660641120;
-    uint256 public releaseTime = 1660641180;
+    uint256 public openCrowdsale = 1661153630;
+    uint256 public closeCrowdsale = 1661153760;
+    uint256 public releaseTime = 1661153860;
 
-    uint256 public constant cliffTime = 3 minutes; // clifftime = timeOf 3 stages
+    uint256 public constant cliffTime = 1 minutes; // clifftime = timeOf 3 stages
 
     enum VestingStages {
         TGE,
@@ -74,15 +74,15 @@ contract Crowdsale is Ownable {
         uint256 firstListingDate = releaseTime;
 
         unlockPercentage[VestingStages.TGE] = 10;
-        unlockPercentage[VestingStages.P2] = 20;
-        unlockPercentage[VestingStages.P3] = 30;
-        unlockPercentage[VestingStages.P4] = 40;
-        unlockPercentage[VestingStages.P5] = 50;
-        unlockPercentage[VestingStages.P6] = 60;
-        unlockPercentage[VestingStages.P7] = 70;
-        unlockPercentage[VestingStages.P8] = 80;
-        unlockPercentage[VestingStages.P9] = 90;
-        unlockPercentage[VestingStages.P10] = 100;
+        unlockPercentage[VestingStages.P2] = 10;
+        unlockPercentage[VestingStages.P3] = 10;
+        unlockPercentage[VestingStages.P4] = 10;
+        unlockPercentage[VestingStages.P5] = 10;
+        unlockPercentage[VestingStages.P6] = 10;
+        unlockPercentage[VestingStages.P7] = 10;
+        unlockPercentage[VestingStages.P8] = 10;
+        unlockPercentage[VestingStages.P9] = 10;
+        unlockPercentage[VestingStages.P10] = 10;
 
         releaseDate[VestingStages.TGE] = firstListingDate;
         releaseDate[VestingStages.P2] = firstListingDate + 1 minutes;
@@ -96,10 +96,13 @@ contract Crowdsale is Ownable {
         releaseDate[VestingStages.P10] = firstListingDate + 9 minutes;
     }
 
+    address[] public arrAddressInvestor;
+
     function addInvestors(address[] memory _addressArr) public onlyOwner {
         for (uint256 idx = 0; idx < _addressArr.length; ++idx) {
             address curAddress = _addressArr[idx];
             isInvestor[curAddress] = true;
+            arrAddressInvestor.push(curAddress);
         }
     }
 
@@ -166,7 +169,7 @@ contract Crowdsale is Ownable {
         return amountUnlockedToken - investorInfor[_addressInvestor].totalClaimed;
     }
 
-    function getAmountUnlockedToken(address _addressInvestor) internal view returns (uint256) {
+    function getAmountUnlockedToken(address _addressInvestor) public view returns (uint256) {
         uint256 vestingStageIndex = getVestingStageIndex();
 
         return vestingStageIndex == 999 ? 0 : investorInfor[_addressInvestor].totalClaim.mul(unlockPercentage[VestingStages(vestingStageIndex)]).div(100);
@@ -214,6 +217,12 @@ contract Crowdsale is Ownable {
     function getRemainingToken(address _addressInvestor) public view returns (uint256) {
         return investorInfor[_addressInvestor].totalClaim - investorInfor[_addressInvestor].totalClaimed;
     }
+
+    /// get whitelist investor
+    function getAddressInvestorArr() public view returns (address[] memory) {
+        return arrAddressInvestor;
+    }
+
 
     //SET FUNCTION - CROWDSALE TIME
     function setTimeCrowdsale(uint256 _openCrowdsale, uint256 _closeCrowdsale) public onlyOwner {
