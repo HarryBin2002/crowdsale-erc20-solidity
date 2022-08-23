@@ -34,11 +34,11 @@ contract Crowdsale is Ownable {
     uint256 public tokenRemaining = crowdsalePool;
     uint256 public totalFunding = 0;
 
-    uint256 public openCrowdsale = 1661153630;
-    uint256 public closeCrowdsale = 1661153760;
-    uint256 public releaseTime = 1661153860;
+    uint256 public openCrowdsale = 1661239100;
+    uint256 public closeCrowdsale = 1661239140;
+    uint256 public releaseTime = 1661239160;
 
-    uint256 public constant cliffTime = 1 minutes; // clifftime = timeOf 3 stages
+    uint256 public constant cliffTime = 3 minutes; // clifftime = timeOf 3 stages
 
     enum VestingStages {
         TGE,
@@ -74,15 +74,15 @@ contract Crowdsale is Ownable {
         uint256 firstListingDate = releaseTime;
 
         unlockPercentage[VestingStages.TGE] = 10;
-        unlockPercentage[VestingStages.P2] = 10;
-        unlockPercentage[VestingStages.P3] = 10;
-        unlockPercentage[VestingStages.P4] = 10;
-        unlockPercentage[VestingStages.P5] = 10;
-        unlockPercentage[VestingStages.P6] = 10;
-        unlockPercentage[VestingStages.P7] = 10;
-        unlockPercentage[VestingStages.P8] = 10;
-        unlockPercentage[VestingStages.P9] = 10;
-        unlockPercentage[VestingStages.P10] = 10;
+        unlockPercentage[VestingStages.P2] = 20;
+        unlockPercentage[VestingStages.P3] = 30;
+        unlockPercentage[VestingStages.P4] = 40;
+        unlockPercentage[VestingStages.P5] = 50;
+        unlockPercentage[VestingStages.P6] = 60;
+        unlockPercentage[VestingStages.P7] = 70;
+        unlockPercentage[VestingStages.P8] = 80;
+        unlockPercentage[VestingStages.P9] = 90;
+        unlockPercentage[VestingStages.P10] = 100;
 
         releaseDate[VestingStages.TGE] = firstListingDate;
         releaseDate[VestingStages.P2] = firstListingDate + 1 minutes;
@@ -160,36 +160,42 @@ contract Crowdsale is Ownable {
     }
 
     function isClaimTiming(uint256 pointTimestamp) public view returns (bool) {
-        return pointTimestamp > releaseTime + cliffTime;
+        return pointTimestamp > (releaseTime + cliffTime);
     }
 
-    function getAvailableTokenToClaim(address _addressInvestor) public view returns (uint256) {
+    function getAvailableTokenToClaim(address _addressInvestor) internal view returns (uint256) {
         uint256 amountUnlockedToken = getAmountUnlockedToken(_addressInvestor);
 
         return amountUnlockedToken - investorInfor[_addressInvestor].totalClaimed;
     }
-
-    function getAmountUnlockedToken(address _addressInvestor) public view returns (uint256) {
-        uint256 vestingStageIndex = getVestingStageIndex();
-
-        return vestingStageIndex == 999 ? 0 : investorInfor[_addressInvestor].totalClaim.mul(unlockPercentage[VestingStages(vestingStageIndex)]).div(100);
-    } 
-
+    
     function getVestingStageIndex() public view returns (uint256 index) {
         uint256 timestamp = block.timestamp;
 
         if (timestamp < releaseDate[VestingStages(0)]) {
             return 999;
-        }
-
-        for (uint256 i = 1; i < 10; ++i) {
-            if (timestamp < releaseDate[VestingStages(i)]) {
-                return i - 1;
+        } else {
+            for (uint256 stageIdx = 0; stageIdx < 10; ++stageIdx) {
+                if (timestamp < releaseDate[VestingStages(stageIdx)]) {
+                    return stageIdx - 1;
+                }
             }
         }
 
         return 9;
     }
+
+    function getAmountUnlockedToken(address _addressInvestor) internal view returns (uint256) {
+        uint256 vestingStageIndex = getVestingStageIndex();
+
+        return vestingStageIndex == 999 
+                    ? 0 
+                    : investorInfor[_addressInvestor]
+                        .totalClaim
+                        .mul(unlockPercentage[VestingStages(vestingStageIndex)])
+                        .div(100);
+    } 
+
 
     // CASE: AN ADDRESS IS LOST CONTROLED
     function changeInvestors(address newAddressInvestor, address oldAddressInvestor) public {
@@ -236,5 +242,7 @@ contract Crowdsale is Ownable {
         require(closeCrowdsale < _releaseTime);
 
         releaseTime = _releaseTime;
+
+        VestingPlan();
     }
 }
